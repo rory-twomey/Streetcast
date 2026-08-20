@@ -26,7 +26,7 @@ export function GigCard({ gig }: { gig: Gig }) {
         </div>
         <div className="absolute top-3.5 right-3.5 frosted rounded-full px-2.5 py-1.5 text-[11px] font-semibold flex items-center gap-1">
           <MapPin size={11} />
-          {gig.isRemote ? "Remote" : `${gig.distanceKm} km`}
+          {gig.isRemote ? "Remote" : gig.distanceKm != null ? `${gig.distanceKm} km` : "Nearby"}
         </div>
       </div>
 
