@@ -22,7 +22,7 @@ export function DiscoverGigsClient({ gigs }: { gigs: Gig[] }) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 relative">
-      <div className="flex-1 min-h-0 mx-5 mt-4 relative">
+      <div className="flex-1 min-h-0 mx-5 mt-4 relative flex flex-col">
         <SwipeDeck
           items={gigs}
           getKey={(g) => g.id}
