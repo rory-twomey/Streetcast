@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
 type SwipeCardProps = {
   isTop: boolean;
@@ -10,24 +10,35 @@ type SwipeCardProps = {
   children: React.ReactNode;
 };
 
+export type SwipeCardHandle = {
+  /** Play the exit animation and report the swipe, as if the user dragged it. */
+  playExit: (direction: "left" | "right") => void;
+};
+
 const SWIPE_THRESHOLD = 110;
 const TAP_MOVE_TOLERANCE = 6;
 
 /**
  * A single card in a SwipeDeck. Handles its own pointer drag, decides
  * whether a gesture was a tap (opens detail) or a swipe (pass/accept),
- * and animates itself off-screen when swiped.
+ * and animates itself off-screen when swiped. Also exposes playExit()
+ * via ref so buttons outside the card (pass/accept controls) can
+ * trigger the same animation programmatically.
  */
-export function SwipeCard({
-  isTop,
-  stackPosition,
-  onSwiped,
-  onTap,
-  children,
-}: SwipeCardProps) {
+export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(function SwipeCard(
+  { isTop, stackPosition, onSwiped, onTap, children },
+  ref
+) {
   const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
   const [exiting, setExiting] = useState<"left" | "right" | null>(null);
   const startRef = useRef({ x: 0, y: 0, moved: 0 });
+
+  useImperativeHandle(ref, () => ({
+    playExit: (direction: "left" | "right") => {
+      setExiting(direction);
+      setTimeout(() => onSwiped(direction), 220);
+    },
+  }));
 
   const offset = stackPosition * 10;
   const scale = 1 - stackPosition * 0.035;
@@ -122,4 +133,4 @@ export function SwipeCard({
       </div>
     </div>
   );
-}
+});
