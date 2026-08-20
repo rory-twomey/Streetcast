@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { X, Info, Check } from "lucide-react";
-import { SwipeDeck } from "@/components/swipe/SwipeDeck";
+import { SwipeDeck, type SwipeDeckHandle } from "@/components/swipe/SwipeDeck";
 import { TalentCard } from "@/components/swipe/TalentCard";
 import { ProfileSheet } from "@/components/profile/ProfileSheet";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -11,6 +11,7 @@ import type { TalentProfile } from "@/types/domain";
 export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
   const [openProfile, setOpenProfile] = useState<TalentProfile | null>(null);
   const [confirmed, setConfirmed] = useState<TalentProfile | null>(null);
+  const deckControls = useRef<SwipeDeckHandle<TalentProfile> | null>(null);
 
   function handleShortlist(t: TalentProfile) {
     // TODO: write to `talent_swipes` (direction: 'right') via Supabase here.
@@ -28,6 +29,7 @@ export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
     <div className="flex flex-col flex-1 min-h-0 relative">
       <div className="flex-1 min-h-0 mx-5 mt-3.5 relative flex flex-col">
         <SwipeDeck
+          controlsRef={deckControls}
           items={talent}
           getKey={(t) => t.id}
           renderCard={(t) => <TalentCard talent={t} />}
@@ -69,18 +71,24 @@ export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
 
       <div className="flex items-center justify-center gap-5 px-5 pt-4 pb-5">
         <button
+          onClick={() => deckControls.current?.swipeLeft()}
           className="w-13 h-13 rounded-full flex items-center justify-center transition-transform active:scale-90"
           style={{ background: "var(--red)", color: "#fff" }}
         >
           <X size={22} strokeWidth={2.4} />
         </button>
         <button
+          onClick={() => {
+            const t = deckControls.current?.getCurrent();
+            if (t) setOpenProfile(t);
+          }}
           className="w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90"
           style={{ background: "var(--fog)", color: "var(--graphite)" }}
         >
           <Info size={17} strokeWidth={2.4} />
         </button>
         <button
+          onClick={() => deckControls.current?.swipeRight()}
           className="w-16 h-16 rounded-full flex items-center justify-center transition-transform active:scale-90"
           style={{ background: "var(--green)", color: "#fff" }}
         >
