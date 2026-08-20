@@ -6,6 +6,7 @@ import { SwipeDeck, type SwipeDeckHandle } from "@/components/swipe/SwipeDeck";
 import { TalentCard } from "@/components/swipe/TalentCard";
 import { ProfileSheet } from "@/components/profile/ProfileSheet";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { createClient } from "@/lib/supabase/client";
 import type { TalentProfile } from "@/types/domain";
 
 export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
@@ -13,16 +14,37 @@ export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
   const [confirmed, setConfirmed] = useState<TalentProfile | null>(null);
   const deckControls = useRef<SwipeDeckHandle<TalentProfile> | null>(null);
 
+  async function recordSwipe(talentId: string, direction: "left" | "right") {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.warn("Not logged in — swipe wasn't saved.");
+      return;
+    }
+
+    const { error } = await supabase.from("talent_swipes").insert({
+      brand_id: user.id,
+      talent_id: talentId,
+      direction,
+    });
+
+    if (error && error.code !== "23505") {
+      console.error("Couldn't save swipe:", error.message);
+    }
+  }
+
   function handleShortlist(t: TalentProfile) {
-    // TODO: write to `talent_swipes` (direction: 'right') via Supabase here.
     setOpenProfile(null);
     setConfirmed(t);
+    recordSwipe(t.id, "right");
   }
 
   function handlePass(t: TalentProfile) {
-    // TODO: write to `talent_swipes` (direction: 'left') via Supabase here.
     setOpenProfile(null);
-    void t;
+    recordSwipe(t.id, "left");
   }
 
   return (

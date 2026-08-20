@@ -5,20 +5,44 @@ import { X, Info, Check } from "lucide-react";
 import { SwipeDeck, type SwipeDeckHandle } from "@/components/swipe/SwipeDeck";
 import { GigCard } from "@/components/swipe/GigCard";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { createClient } from "@/lib/supabase/client";
 import type { Gig } from "@/types/domain";
 
 export function DiscoverGigsClient({ gigs }: { gigs: Gig[] }) {
   const [confirmed, setConfirmed] = useState<Gig | null>(null);
   const deckControls = useRef<SwipeDeckHandle<Gig> | null>(null);
 
+  async function recordSwipe(gigId: string, direction: "left" | "right") {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.warn("Not logged in — swipe wasn't saved.");
+      return;
+    }
+
+    const { error } = await supabase.from("gig_swipes").insert({
+      gig_id: gigId,
+      talent_id: user.id,
+      direction,
+    });
+
+    // Ignore "already swiped this one" errors (unique constraint) — anything
+    // else, log it so it's visible in the browser console while we're testing.
+    if (error && error.code !== "23505") {
+      console.error("Couldn't save swipe:", error.message);
+    }
+  }
+
   function handleApply(gig: Gig) {
-    // TODO: write to `gig_swipes` (direction: 'right') via Supabase here.
     setConfirmed(gig);
+    recordSwipe(gig.id, "right");
   }
 
   function handlePass(gig: Gig) {
-    // TODO: write to `gig_swipes` (direction: 'left') via Supabase here.
-    void gig;
+    recordSwipe(gig.id, "left");
   }
 
   return (
