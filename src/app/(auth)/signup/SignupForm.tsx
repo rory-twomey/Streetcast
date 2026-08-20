@@ -62,13 +62,13 @@ export default function SignupForm() {
 
     if (role === "talent") {
       await supabase.from("talent_profiles").insert({ id: data.user.id });
-      router.push("/discover");
+      router.push("/talent/discover");
     } else {
       await supabase.from("brand_profiles").insert({
         id: data.user.id,
         company_name: companyName,
       });
-      router.push("/gigs");
+      router.push("/brand/gigs");
     }
   }
 
