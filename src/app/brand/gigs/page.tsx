@@ -115,7 +115,8 @@ export default async function BrandGigsPage() {
             </div>
             <div className="flex items-center gap-2.5 mt-3">
               <span className="text-xs font-medium" style={{ color: "var(--graphite)" }}>
-                {applicantCounts[gig.id] ?? 0} people are in
+                {applicantCounts[gig.id] ?? 0}{" "}
+                {(applicantCounts[gig.id] ?? 0) === 1 ? "person is" : "people are"} in
               </span>
             </div>
           </div>
