@@ -58,25 +58,31 @@ export function ProfileSheet({
           </p>
 
           <Section title="Past jobs">
-            <div className="flex flex-col gap-2">
-              {talent.pastJobs.map((job) => (
-                <div
-                  key={job.title + job.date}
-                  className="flex justify-between items-center rounded-[14px] px-3.5 py-3"
-                  style={{ background: "var(--fog)" }}
-                >
-                  <div>
-                    <div className="text-sm font-semibold">{job.title}</div>
-                    <div className="text-xs" style={{ color: "var(--graphite)" }}>
-                      {job.brand}
+            {talent.pastJobs.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--graphite)" }}>
+                No completed gigs on Streetcast yet.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {talent.pastJobs.map((job) => (
+                  <div
+                    key={job.title + job.date}
+                    className="flex justify-between items-center rounded-[14px] px-3.5 py-3"
+                    style={{ background: "var(--fog)" }}
+                  >
+                    <div>
+                      <div className="text-sm font-semibold">{job.title}</div>
+                      <div className="text-xs" style={{ color: "var(--graphite)" }}>
+                        {job.brand}
+                      </div>
+                    </div>
+                    <div className="font-mono text-[10.5px]" style={{ color: "var(--graphite)" }}>
+                      {job.date}
                     </div>
                   </div>
-                  <div className="font-mono text-[10.5px]" style={{ color: "var(--graphite)" }}>
-                    {job.date}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Section>
 
           <Section title="Interests">
@@ -88,20 +94,26 @@ export function ProfileSheet({
           </Section>
 
           <Section title="Reviews from brands">
-            <div className="flex flex-col gap-3.5">
-              {talent.reviews.map((r) => (
-                <div key={r.brand} className="pl-3" style={{ borderLeft: "2px solid var(--blue)" }}>
-                  <div className="text-xs mb-1" style={{ color: "var(--ink)" }}>
-                    {"★".repeat(r.stars)}
-                    {"☆".repeat(5 - r.stars)}
+            {talent.reviews.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--graphite)" }}>
+                No reviews yet.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3.5">
+                {talent.reviews.map((r) => (
+                  <div key={r.brand} className="pl-3" style={{ borderLeft: "2px solid var(--blue)" }}>
+                    <div className="text-xs mb-1" style={{ color: "var(--ink)" }}>
+                      {"★".repeat(r.stars)}
+                      {"☆".repeat(5 - r.stars)}
+                    </div>
+                    <p className="text-[13px] leading-snug mb-1">&ldquo;{r.quote}&rdquo;</p>
+                    <span className="text-[11px]" style={{ color: "var(--graphite)" }}>
+                      {r.brand}
+                    </span>
                   </div>
-                  <p className="text-[13px] leading-snug mb-1">&ldquo;{r.quote}&rdquo;</p>
-                  <span className="text-[11px]" style={{ color: "var(--graphite)" }}>
-                    {r.brand}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Section>
         </div>
       </div>
