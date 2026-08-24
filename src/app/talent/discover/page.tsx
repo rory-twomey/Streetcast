@@ -5,8 +5,28 @@ import { DiscoverGigsClient } from "./DiscoverGigsClient";
 import type { Gig } from "@/types/domain";
 
 export default async function TalentDiscoverPage() {
-  const gigs = await loadLiveGigs();
-  return <DiscoverGigsClient gigs={gigs} />;
+  const [gigs, isVerified] = await Promise.all([loadLiveGigs(), loadVerificationStatus()]);
+  return <DiscoverGigsClient gigs={gigs} isVerified={isVerified} />;
+}
+
+async function loadVerificationStatus(): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("id_verification_status")
+      .eq("id", user.id)
+      .single();
+
+    return data?.id_verification_status === "verified";
+  } catch {
+    return false;
+  }
 }
 
 async function loadLiveGigs(): Promise<Gig[]> {

@@ -24,6 +24,13 @@ const RATE_UNIT_LABEL: Record<string, string> = {
   day: "/day",
 };
 
+const VERIFICATION_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
+  unverified: { label: "Not verified", bg: "var(--fog)", fg: "var(--graphite)" },
+  pending: { label: "Verification pending", bg: "var(--blue-tint)", fg: "var(--blue)" },
+  verified: { label: "Verified", bg: "#e3f8e9", fg: "var(--green)" },
+  rejected: { label: "Verification failed", bg: "var(--red-tint)", fg: "var(--red)" },
+};
+
 export default async function BrandGigsPage() {
   const supabase = await createClient();
   const {
@@ -42,6 +49,16 @@ export default async function BrandGigsPage() {
       </div>
     );
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id_verification_status")
+    .eq("id", user.id)
+    .single();
+
+  const verificationStatus = profile?.id_verification_status ?? "unverified";
+  const verification = VERIFICATION_LABEL[verificationStatus] ?? VERIFICATION_LABEL.unverified;
+  const isVerified = verificationStatus === "verified";
 
   const { data: gigs } = await supabase
     .from("gigs")
@@ -68,11 +85,29 @@ export default async function BrandGigsPage() {
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-4 pb-6 flex flex-col gap-3">
-      <div>
-        <div className="text-lg font-bold tracking-tight">Your gigs</div>
-        <p className="text-sm" style={{ color: "var(--graphite)" }}>
-          People swipe, you pick who&apos;s cast. No agency fees.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-lg font-bold tracking-tight">Your gigs</div>
+          <p className="text-sm" style={{ color: "var(--graphite)" }}>
+            People swipe, you pick who&apos;s cast. No agency fees.
+          </p>
+        </div>
+        {isVerified ? (
+          <span
+            className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
+            style={{ background: verification.bg, color: verification.fg }}
+          >
+            {verification.label}
+          </span>
+        ) : (
+          <Link
+            href="/verify"
+            className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
+            style={{ background: verification.bg, color: verification.fg }}
+          >
+            {verification.label} →
+          </Link>
+        )}
       </div>
 
       {gigRows.length === 0 && (

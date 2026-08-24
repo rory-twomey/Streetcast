@@ -5,11 +5,13 @@ import { X, Info, Check } from "lucide-react";
 import { SwipeDeck, type SwipeDeckHandle } from "@/components/swipe/SwipeDeck";
 import { GigCard } from "@/components/swipe/GigCard";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { VerifyPromptModal } from "@/components/ui/VerifyPromptModal";
 import { createClient } from "@/lib/supabase/client";
 import type { Gig } from "@/types/domain";
 
-export function DiscoverGigsClient({ gigs }: { gigs: Gig[] }) {
+export function DiscoverGigsClient({ gigs, isVerified }: { gigs: Gig[]; isVerified: boolean }) {
   const [confirmed, setConfirmed] = useState<Gig | null>(null);
+  const [showVerifyPrompt, setShowVerifyPrompt] = useState(false);
   const deckControls = useRef<SwipeDeckHandle<Gig> | null>(null);
 
   async function recordSwipe(gigId: string, direction: "left" | "right") {
@@ -37,6 +39,13 @@ export function DiscoverGigsClient({ gigs }: { gigs: Gig[] }) {
   }
 
   function handleApply(gig: Gig) {
+    // The card still visually swipes away either way — but an unverified
+    // person's "application" doesn't actually get recorded, and they're
+    // prompted to verify instead of seeing the normal confirmation.
+    if (!isVerified) {
+      setShowVerifyPrompt(true);
+      return;
+    }
     setConfirmed(gig);
     recordSwipe(gig.id, "right");
   }
@@ -100,6 +109,8 @@ export function DiscoverGigsClient({ gigs }: { gigs: Gig[] }) {
           onClose={() => setConfirmed(null)}
         />
       )}
+
+      {showVerifyPrompt && <VerifyPromptModal onClose={() => setShowVerifyPrompt(false)} />}
     </div>
   );
 }

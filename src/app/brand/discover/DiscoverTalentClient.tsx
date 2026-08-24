@@ -6,12 +6,20 @@ import { SwipeDeck, type SwipeDeckHandle } from "@/components/swipe/SwipeDeck";
 import { TalentCard } from "@/components/swipe/TalentCard";
 import { ProfileSheet } from "@/components/profile/ProfileSheet";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { VerifyPromptModal } from "@/components/ui/VerifyPromptModal";
 import { createClient } from "@/lib/supabase/client";
 import type { TalentProfile } from "@/types/domain";
 
-export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
+export function DiscoverTalentClient({
+  talent,
+  isVerified,
+}: {
+  talent: TalentProfile[];
+  isVerified: boolean;
+}) {
   const [openProfile, setOpenProfile] = useState<TalentProfile | null>(null);
   const [confirmed, setConfirmed] = useState<TalentProfile | null>(null);
+  const [showVerifyPrompt, setShowVerifyPrompt] = useState(false);
   const deckControls = useRef<SwipeDeckHandle<TalentProfile> | null>(null);
 
   async function recordSwipe(talentId: string, direction: "left" | "right") {
@@ -38,6 +46,13 @@ export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
 
   function handleShortlist(t: TalentProfile) {
     setOpenProfile(null);
+    // As with the talent side: unverified brands still see the card swipe
+    // away, but the shortlist doesn't actually get recorded until they've
+    // verified — they're prompted instead of seeing the normal confirmation.
+    if (!isVerified) {
+      setShowVerifyPrompt(true);
+      return;
+    }
     setConfirmed(t);
     recordSwipe(t.id, "right");
   }
@@ -89,6 +104,8 @@ export function DiscoverTalentClient({ talent }: { talent: TalentProfile[] }) {
             onClose={() => setConfirmed(null)}
           />
         )}
+
+        {showVerifyPrompt && <VerifyPromptModal onClose={() => setShowVerifyPrompt(false)} />}
       </div>
 
       <div className="flex items-center justify-center gap-5 px-5 pt-4 pb-5">

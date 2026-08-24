@@ -43,6 +43,7 @@ export default async function TalentProfilePage() {
   const verification =
     VERIFICATION_LABEL[profile?.id_verification_status ?? "unverified"] ??
     VERIFICATION_LABEL.unverified;
+  const isVerified = profile?.id_verification_status === "verified";
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-4 pb-8">
@@ -53,12 +54,22 @@ export default async function TalentProfilePage() {
             This is what brands see when they swipe on you in Discover.
           </p>
         </div>
-        <span
-          className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
-          style={{ background: verification.bg, color: verification.fg }}
-        >
-          {verification.label}
-        </span>
+        {isVerified ? (
+          <span
+            className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
+            style={{ background: verification.bg, color: verification.fg }}
+          >
+            {verification.label}
+          </span>
+        ) : (
+          <Link
+            href="/verify"
+            className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
+            style={{ background: verification.bg, color: verification.fg }}
+          >
+            {verification.label} →
+          </Link>
+        )}
       </div>
 
       <ProfileForm

@@ -5,8 +5,28 @@ import { DiscoverTalentClient } from "./DiscoverTalentClient";
 import type { TalentProfile } from "@/types/domain";
 
 export default async function BrandDiscoverPage() {
-  const talent = await loadTalent();
-  return <DiscoverTalentClient talent={talent} />;
+  const [talent, isVerified] = await Promise.all([loadTalent(), loadVerificationStatus()]);
+  return <DiscoverTalentClient talent={talent} isVerified={isVerified} />;
+}
+
+async function loadVerificationStatus(): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("id_verification_status")
+      .eq("id", user.id)
+      .single();
+
+    return data?.id_verification_status === "verified";
+  } catch {
+    return false;
+  }
 }
 
 async function loadTalent(): Promise<TalentProfile[]> {
