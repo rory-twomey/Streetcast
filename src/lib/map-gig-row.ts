@@ -31,7 +31,10 @@ type GigRow = {
   duration_minutes: number | null;
   location_text: string | null;
   is_remote: boolean;
-  brand_profiles: { company_name: string } | { company_name: string }[] | null;
+  brand_profiles:
+    | { company_name: string; business_verification_status: string }
+    | { company_name: string; business_verification_status: string }[]
+    | null;
 };
 
 export function mapGigRow(row: GigRow): Gig {
@@ -41,6 +44,7 @@ export function mapGigRow(row: GigRow): Gig {
     id: row.id,
     title: row.title,
     brandName: brand?.company_name ?? "A Streetcast brand",
+    brandVerified: brand?.business_verification_status === "verified",
     category: row.category,
     description: row.description,
     rate: row.rate,
