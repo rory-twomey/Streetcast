@@ -34,7 +34,7 @@ async function loadLiveGigs(): Promise<Gig[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("gigs")
-      .select("*, brand_profiles(company_name)")
+      .select("*, brand_profiles(company_name, business_verification_status)")
       .eq("status", "live")
       .order("created_at", { ascending: false });
 
