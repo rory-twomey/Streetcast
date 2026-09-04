@@ -5,6 +5,7 @@ export const mockGigs: Gig[] = [
     id: "gig-1",
     title: "Studio Product Shoot",
     brandName: "Nova Skincare",
+    brandVerified: true,
     category: "Photoshoot",
     description:
       "Model a 6-piece skincare range for e-commerce photography. Studio lighting, no experience required.",
@@ -19,6 +20,7 @@ export const mockGigs: Gig[] = [
     id: "gig-2",
     title: "Pop-Up Brand Ambassador",
     brandName: "Bloom Coffee Co.",
+    brandVerified: false,
     category: "Event Promo",
     description:
       "Hand out samples and chat to customers at a weekend pop-up. Friendly energy over experience.",
@@ -33,6 +35,7 @@ export const mockGigs: Gig[] = [
     id: "gig-3",
     title: "UGC Testimonial Video",
     brandName: "FitGear Australia",
+    brandVerified: true,
     category: "Content Video",
     description:
       "Film a 30-second honest reaction video with your phone at home. Script and product provided.",
