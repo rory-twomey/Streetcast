@@ -1,4 +1,4 @@
-import { Clock, MapPin, Briefcase } from "lucide-react";
+import { Clock, MapPin, Briefcase, BadgeCheck } from "lucide-react";
 import type { Gig } from "@/types/domain";
 
 const rateSubLabel: Record<Gig["rateUnit"], string> = {
@@ -38,6 +38,9 @@ export function GigCard({ gig }: { gig: Gig }) {
         <div className="flex items-center gap-1.5 text-[13px] font-medium" style={{ color: "var(--graphite)" }}>
           <Briefcase size={13} />
           {gig.brandName}
+          {gig.brandVerified && (
+            <BadgeCheck size={14} style={{ color: "var(--blue)" }} strokeWidth={2.4} />
+          )}
         </div>
         <p className="text-[13px] leading-snug line-clamp-2" style={{ color: "var(--graphite)" }}>
           {gig.description}
