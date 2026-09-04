@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getConversationPartners } from "@/lib/messaging";
 import { ConversationList } from "@/components/messages/ConversationList";
 
-export default async function TalentMessagesPage() {
+export default async function BrandMessagesPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,6 +16,6 @@ export default async function TalentMessagesPage() {
     );
   }
 
-  const partners = await getConversationPartners(supabase, user.id, "talent");
-  return <ConversationList partners={partners} basePath="/talent/messages" />;
+  const partners = await getConversationPartners(supabase, user.id, "brand");
+  return <ConversationList partners={partners} basePath="/brand/messages" />;
 }

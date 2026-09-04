@@ -5,7 +5,7 @@ export default function Home() {
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center">
       <div className="text-2xl font-extrabold tracking-tight mb-3">Streetcast</div>
       <h1 className="text-3xl font-bold tracking-tight max-w-md mb-3">
-        Get cast. Get paid.
+        Get casted. Get paid.
       </h1>
       <p className="max-w-sm mb-10" style={{ color: "var(--graphite)" }}>
         Streetcast matches brands with everyday people for local photoshoots, promo

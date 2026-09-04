@@ -14,7 +14,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Streetcast — Get cast. Get paid.",
+  title: "Streetcast — Get casted. Get paid.",
   description:
     "Streetcast matches brands with everyday people for local photoshoots, promo, and content gigs.",
 };

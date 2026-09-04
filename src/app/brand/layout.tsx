@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const tabs = [
   { href: "/brand/gigs", label: "My gigs" },
   { href: "/brand/discover", label: "Discover" },
+  { href: "/brand/messages", label: "Messages" },
   { href: "/brand/map", label: "Map" },
 ];
 
@@ -29,7 +30,7 @@ export default function BrandLayout({ children }: { children: React.ReactNode })
 
       <div className="flex gap-1.5 px-5 pt-3.5">
         {tabs.map((tab) => {
-          const active = pathname === tab.href;
+          const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           return (
             <Link
               key={tab.href}
