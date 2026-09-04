@@ -2,6 +2,7 @@ export type Gig = {
   id: string;
   title: string;
   brandName: string;
+  brandVerified: boolean;
   category: string;
   description: string;
   rate: number;
