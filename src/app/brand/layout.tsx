@@ -8,6 +8,7 @@ const tabs = [
   { href: "/brand/discover", label: "Discover" },
   { href: "/brand/messages", label: "Messages" },
   { href: "/brand/map", label: "Map" },
+  { href: "/brand/profile", label: "Profile" },
 ];
 
 export default function BrandLayout({ children }: { children: React.ReactNode }) {
