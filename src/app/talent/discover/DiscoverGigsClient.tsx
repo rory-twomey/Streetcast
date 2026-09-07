@@ -101,8 +101,8 @@ export function DiscoverGigsClient({ gigs, isVerified }: { gigs: Gig[]; isVerifi
           title="You're in!"
           message={
             <>
-              <strong style={{ color: "var(--ink)" }}>{confirmed.brandName}</strong> will
-              review your profile for &ldquo;{confirmed.title}.&rdquo; You&apos;ll hear back
+              <strong style={{ color: "var(--ink)" }}>{confirmed.brandName}</strong>{" "}
+              will review your profile for &ldquo;{confirmed.title}.&rdquo; You&apos;ll hear back
               within 48 hours.
             </>
           }
