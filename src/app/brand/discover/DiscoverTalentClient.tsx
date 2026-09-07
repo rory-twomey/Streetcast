@@ -97,8 +97,8 @@ export function DiscoverTalentClient({
             title="Shortlisted!"
             message={
               <>
-                <strong style={{ color: "var(--ink)" }}>{confirmed.name}</strong> has been
-                added to your shortlist. You can message them from Bookings.
+                <strong style={{ color: "var(--ink)" }}>{confirmed.name}</strong>{" "}
+                has been added to your shortlist. You can message them from Bookings.
               </>
             }
             onClose={() => setConfirmed(null)}
