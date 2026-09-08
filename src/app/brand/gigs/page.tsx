@@ -154,6 +154,13 @@ export default async function BrandGigsPage() {
                 {(applicantCounts[gig.id] ?? 0) === 1 ? "person is" : "people are"} in
               </span>
             </div>
+            <Link
+              href={`/brand/gigs/${gig.id}`}
+              className="mt-3 block text-xs font-semibold text-center rounded-full py-2"
+              style={{ background: "var(--fog)", color: "var(--ink)" }}
+            >
+              View applicants →
+            </Link>
           </div>
         );
       })}
