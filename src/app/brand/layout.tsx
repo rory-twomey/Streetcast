@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const tabs = [
   { href: "/brand/gigs", label: "My gigs" },
+  { href: "/brand/bookings", label: "Bookings" },
   { href: "/brand/discover", label: "Discover" },
   { href: "/brand/messages", label: "Messages" },
   { href: "/brand/map", label: "Map" },
@@ -29,14 +30,14 @@ export default function BrandLayout({ children }: { children: React.ReactNode })
         </span>
       </header>
 
-      <div className="flex gap-1.5 px-5 pt-3.5">
+      <div className="flex gap-1 px-5 pt-3.5">
         {tabs.map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex-1 text-center text-xs font-semibold py-2 rounded-[10px]"
+              className="flex-1 text-center text-[11px] font-semibold py-2 rounded-[10px] whitespace-nowrap px-0.5"
               style={
                 active
                   ? { background: "var(--ink)", color: "#fff" }
