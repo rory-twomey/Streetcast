@@ -18,7 +18,7 @@ export default function Home() {
           className="rounded-full px-6 py-3.5 font-semibold text-white text-center"
           style={{ background: "var(--blue)" }}
         >
-          I want to get cast
+          I want to get casted
         </Link>
         <Link
           href="/signup?role=brand"
