@@ -45,7 +45,35 @@ async function loadTalent(): Promise<TalentProfile[]> {
     // fall back to mock data so the app is still demoable.
     if (error || !data) return mockTalent;
 
-    return (data as unknown as TalentProfileRow[]).map(mapTalentProfileRow);
+    const profiles = (data as unknown as TalentProfileRow[]).map(mapTalentProfileRow);
+
+    // Overlay real rating/review counts from the reviews table — the
+    // talent_profiles columns are just a placeholder default of 0.
+    const talentIds = profiles.map((p) => p.id);
+    if (talentIds.length > 0) {
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("reviewee_id, rating")
+        .in("reviewee_id", talentIds);
+
+      const statsByTalent = new Map<string, { sum: number; count: number }>();
+      for (const r of reviews ?? []) {
+        const s = statsByTalent.get(r.reviewee_id) ?? { sum: 0, count: 0 };
+        s.sum += r.rating;
+        s.count += 1;
+        statsByTalent.set(r.reviewee_id, s);
+      }
+
+      for (const p of profiles) {
+        const s = statsByTalent.get(p.id);
+        if (s) {
+          p.rating = Math.round((s.sum / s.count) * 10) / 10;
+          p.reviewCount = s.count;
+        }
+      }
+    }
+
+    return profiles;
   } catch {
     return mockTalent;
   }
