@@ -7,6 +7,7 @@ type BookingRow = {
   status: string;
   agreed_rate: number;
   scheduled_at: string | null;
+  brand_id: string;
   gigs: { title: string } | { title: string }[] | null;
   brand_profiles: { company_name: string } | { company_name: string }[] | null;
 };
@@ -32,11 +33,27 @@ export default async function TalentBookingsPage() {
 
   const { data: bookings } = await supabase
     .from("bookings")
-    .select("id, status, agreed_rate, scheduled_at, gigs(title), brand_profiles(company_name)")
+    .select("id, status, agreed_rate, scheduled_at, brand_id, gigs(title), brand_profiles(company_name)")
     .eq("talent_id", user.id)
     .order("created_at", { ascending: false });
 
-  const rows = ((bookings ?? []) as BookingRow[]).map((b) => {
+  const bookingRows = (bookings ?? []) as BookingRow[];
+  const bookingIds = bookingRows.map((b) => b.id);
+
+  let myReviewByBooking = new Map<string, { rating: number; comment: string | null }>();
+  if (bookingIds.length > 0) {
+    const { data: reviews } = await supabase
+      .from("reviews")
+      .select("booking_id, rating, comment")
+      .eq("reviewer_id", user.id)
+      .in("booking_id", bookingIds);
+
+    myReviewByBooking = new Map(
+      (reviews ?? []).map((r) => [r.booking_id, { rating: r.rating, comment: r.comment }])
+    );
+  }
+
+  const rows = bookingRows.map((b) => {
     const gig = Array.isArray(b.gigs) ? b.gigs[0] : b.gigs;
     const brand = Array.isArray(b.brand_profiles) ? b.brand_profiles[0] : b.brand_profiles;
     return {
@@ -45,7 +62,9 @@ export default async function TalentBookingsPage() {
       agreedRate: b.agreed_rate,
       scheduledAt: b.scheduled_at,
       gigTitle: gig?.title ?? "A Streetcast gig",
+      counterpartyId: b.brand_id,
       counterpartyName: brand?.company_name ?? "A Streetcast brand",
+      myReview: myReviewByBooking.get(b.id) ?? null,
     };
   });
 
