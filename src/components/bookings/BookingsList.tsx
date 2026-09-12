@@ -9,7 +9,9 @@ export type BookingRowView = {
   agreedRate: number;
   scheduledAt: string | null;
   gigTitle: string;
+  counterpartyId: string;
   counterpartyName: string;
+  myReview: { rating: number; comment: string | null } | null;
 };
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
@@ -31,6 +33,10 @@ export function BookingsList({
   const [rows, setRows] = useState(bookings);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reviewFormId, setReviewFormId] = useState<string | null>(null);
+  const [ratingDraft, setRatingDraft] = useState(5);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   async function updateStatus(id: string, status: string) {
     setError(null);
@@ -47,6 +53,48 @@ export function BookingsList({
 
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
     setLoadingId(null);
+  }
+
+  async function submitReview(booking: BookingRowView) {
+    setError(null);
+    setSubmittingReview(true);
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("You need to be logged in to leave a review.");
+      setSubmittingReview(false);
+      return;
+    }
+
+    const { error: insertError } = await supabase.from("reviews").insert({
+      booking_id: booking.id,
+      reviewer_id: user.id,
+      reviewee_id: booking.counterpartyId,
+      rating: ratingDraft,
+      comment: commentDraft || null,
+    });
+
+    if (insertError) {
+      setError(insertError.message);
+      setSubmittingReview(false);
+      return;
+    }
+
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === booking.id
+          ? { ...r, myReview: { rating: ratingDraft, comment: commentDraft || null } }
+          : r
+      )
+    );
+    setReviewFormId(null);
+    setCommentDraft("");
+    setRatingDraft(5);
+    setSubmittingReview(false);
   }
 
   return (
@@ -107,17 +155,110 @@ export function BookingsList({
               </div>
             )}
 
-            {viewer === "brand" &&
-              (b.status === "pending_confirmation" || b.status === "confirmed") && (
+            {viewer === "brand" && b.status === "pending_confirmation" && (
+              <button
+                onClick={() => updateStatus(b.id, "cancelled")}
+                disabled={busy}
+                className="mt-3 text-xs font-semibold py-2 rounded-full w-full disabled:opacity-50"
+                style={{ background: "var(--fog)", color: "var(--ink)" }}
+              >
+                {busy ? "…" : "Cancel booking"}
+              </button>
+            )}
+
+            {b.status === "confirmed" && (
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => updateStatus(b.id, "completed")}
+                  disabled={busy}
+                  className="flex-1 text-xs font-semibold py-2 rounded-full text-white disabled:opacity-50"
+                  style={{ background: "var(--blue)" }}
+                >
+                  {busy ? "…" : "Mark as completed"}
+                </button>
                 <button
                   onClick={() => updateStatus(b.id, "cancelled")}
                   disabled={busy}
-                  className="mt-3 text-xs font-semibold py-2 rounded-full w-full disabled:opacity-50"
+                  className="text-xs font-semibold py-2 px-4 rounded-full disabled:opacity-50"
                   style={{ background: "var(--fog)", color: "var(--ink)" }}
                 >
-                  {busy ? "…" : "Cancel booking"}
+                  {busy ? "…" : "Cancel"}
                 </button>
-              )}
+              </div>
+            )}
+
+            {b.status === "completed" && (
+              <div className="mt-3">
+                {b.myReview ? (
+                  <div
+                    className="rounded-[12px] p-3 text-xs"
+                    style={{ background: "var(--fog)", color: "var(--ink)" }}
+                  >
+                    <div>
+                      You rated this {"★".repeat(b.myReview.rating)}
+                      {"☆".repeat(5 - b.myReview.rating)}
+                    </div>
+                    {b.myReview.comment && (
+                      <div className="mt-1" style={{ color: "var(--graphite)" }}>
+                        {b.myReview.comment}
+                      </div>
+                    )}
+                  </div>
+                ) : reviewFormId === b.id ? (
+                  <div className="rounded-[12px] p-3" style={{ background: "var(--fog)" }}>
+                    <div className="flex gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => setRatingDraft(n)}
+                          className="text-xl leading-none"
+                          style={{ color: n <= ratingDraft ? "var(--blue)" : "var(--hairline)" }}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={commentDraft}
+                      onChange={(e) => setCommentDraft(e.target.value)}
+                      placeholder="How did it go? (optional)"
+                      rows={2}
+                      className="w-full text-xs rounded-[10px] p-2 mb-2"
+                      style={{ border: "1px solid var(--hairline)", background: "#fff" }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => submitReview(b)}
+                        disabled={submittingReview}
+                        className="flex-1 text-xs font-semibold py-2 rounded-full text-white disabled:opacity-50"
+                        style={{ background: "var(--blue)" }}
+                      >
+                        {submittingReview ? "Submitting…" : "Submit review"}
+                      </button>
+                      <button
+                        onClick={() => setReviewFormId(null)}
+                        className="text-xs font-semibold py-2 px-4 rounded-full"
+                        style={{ background: "#fff", color: "var(--ink)", border: "1px solid var(--hairline)" }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setReviewFormId(b.id);
+                      setRatingDraft(5);
+                      setCommentDraft("");
+                    }}
+                    className="text-xs font-semibold py-2 rounded-full w-full"
+                    style={{ background: "var(--fog)", color: "var(--ink)" }}
+                  >
+                    Leave a review
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       })}
