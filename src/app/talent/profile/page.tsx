@@ -40,6 +40,7 @@ export default async function TalentProfilePage() {
     .eq("id", user.id)
     .single();
 
+  const payoutsReady = talentProfile?.stripe_connect_onboarded === true;
   const verification =
     VERIFICATION_LABEL[profile?.id_verification_status ?? "unverified"] ??
     VERIFICATION_LABEL.unverified;
@@ -68,6 +69,25 @@ export default async function TalentProfilePage() {
             style={{ background: verification.bg, color: verification.fg }}
           >
             {verification.label} →
+          </Link>
+        )}
+      </div>
+
+      <div className="mb-5">
+        {payoutsReady ? (
+          <span
+            className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
+            style={{ background: "#e3f8e9", color: "var(--green)" }}
+          >
+            Payouts set up
+          </span>
+        ) : (
+          <Link
+            href="/payouts"
+            className="text-[10.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap"
+            style={{ background: "var(--blue-tint)", color: "var(--blue)" }}
+          >
+            Set up payouts to get paid →
           </Link>
         )}
       </div>
