@@ -8,6 +8,8 @@ type BookingRow = {
   agreed_rate: number;
   scheduled_at: string | null;
   brand_id: string;
+  payment_status: "unpaid" | "held" | "released" | "failed";
+  talent_payout_cents: number | null;
   gigs: { title: string } | { title: string }[] | null;
   brand_profiles: { company_name: string } | { company_name: string }[] | null;
 };
@@ -33,7 +35,9 @@ export default async function TalentBookingsPage() {
 
   const { data: bookings } = await supabase
     .from("bookings")
-    .select("id, status, agreed_rate, scheduled_at, brand_id, gigs(title), brand_profiles(company_name)")
+    .select(
+      "id, status, agreed_rate, scheduled_at, brand_id, payment_status, talent_payout_cents, gigs(title), brand_profiles(company_name)"
+    )
     .eq("talent_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -65,6 +69,8 @@ export default async function TalentBookingsPage() {
       counterpartyId: b.brand_id,
       counterpartyName: brand?.company_name ?? "A Streetcast brand",
       myReview: myReviewByBooking.get(b.id) ?? null,
+      paymentStatus: b.payment_status ?? "unpaid",
+      talentPayoutCents: b.talent_payout_cents,
     };
   });
 
