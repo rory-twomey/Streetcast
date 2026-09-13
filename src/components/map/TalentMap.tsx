@@ -23,7 +23,7 @@ export function TalentMap({
       <Map
         mapboxAccessToken={mapboxToken}
         initialViewState={{ latitude: center.lat, longitude: center.lng, zoom: 11.5 }}
-        style={{ width: "100%", height: "100%" }}
+        style={{ position: "absolute", inset: 0 }}
         mapStyle="mapbox://styles/mapbox/light-v11"
       >
         <Marker latitude={center.lat} longitude={center.lng} anchor="center">
