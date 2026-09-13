@@ -12,6 +12,8 @@ export type BookingRowView = {
   counterpartyId: string;
   counterpartyName: string;
   myReview: { rating: number; comment: string | null } | null;
+  paymentStatus: "unpaid" | "held" | "released" | "failed";
+  talentPayoutCents: number | null;
 };
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
@@ -32,6 +34,7 @@ export function BookingsList({
 }) {
   const [rows, setRows] = useState(bookings);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [paymentActionId, setPaymentActionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reviewFormId, setReviewFormId] = useState<string | null>(null);
   const [ratingDraft, setRatingDraft] = useState(5);
@@ -53,6 +56,59 @@ export function BookingsList({
 
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
     setLoadingId(null);
+  }
+
+  async function payNow(bookingId: string) {
+    setError(null);
+    setPaymentActionId(bookingId);
+
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Couldn't start payment.");
+        setPaymentActionId(null);
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      setError("Couldn't start payment.");
+      setPaymentActionId(null);
+    }
+  }
+
+  async function releasePayment(bookingId: string) {
+    setError(null);
+    setPaymentActionId(bookingId);
+
+    try {
+      const res = await fetch("/api/stripe/release", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Couldn't release payment.");
+        setPaymentActionId(null);
+        return;
+      }
+
+      setRows((prev) =>
+        prev.map((r) => (r.id === bookingId ? { ...r, paymentStatus: "released" } : r))
+      );
+      setPaymentActionId(null);
+    } catch {
+      setError("Couldn't release payment.");
+      setPaymentActionId(null);
+    }
   }
 
   async function submitReview(booking: BookingRowView) {
@@ -166,6 +222,33 @@ export function BookingsList({
               </button>
             )}
 
+            {b.status === "confirmed" && viewer === "brand" && b.paymentStatus === "unpaid" && (
+              <div className="mt-3">
+                <button
+                  onClick={() => payNow(b.id)}
+                  disabled={paymentActionId === b.id}
+                  className="text-xs font-semibold py-2 rounded-full w-full text-white disabled:opacity-50"
+                  style={{ background: "var(--blue)" }}
+                >
+                  {paymentActionId === b.id
+                    ? "Redirecting…"
+                    : `Pay $${(b.agreedRate * 1.1).toFixed(2)} now`}
+                </button>
+                <div className="text-[10px] mt-1 text-center" style={{ color: "var(--graphite)" }}>
+                  ${b.agreedRate} to talent + 10% Streetcast fee
+                </div>
+              </div>
+            )}
+
+            {b.status === "confirmed" && b.paymentStatus === "held" && (
+              <div
+                className="mt-3 text-[10.5px] font-semibold px-2.5 py-1.5 rounded-full inline-block"
+                style={{ background: "var(--blue-tint)", color: "var(--blue)" }}
+              >
+                Payment held in escrow
+              </div>
+            )}
+
             {b.status === "confirmed" && (
               <div className="flex gap-2 mt-3">
                 <button
@@ -184,6 +267,37 @@ export function BookingsList({
                 >
                   {busy ? "…" : "Cancel"}
                 </button>
+              </div>
+            )}
+
+            {b.status === "completed" && b.paymentStatus === "held" && viewer === "brand" && (
+              <button
+                onClick={() => releasePayment(b.id)}
+                disabled={paymentActionId === b.id}
+                className="text-xs font-semibold py-2 rounded-full w-full text-white disabled:opacity-50 mb-2"
+                style={{ background: "var(--green)" }}
+              >
+                {paymentActionId === b.id
+                  ? "Releasing…"
+                  : `Release $${((b.talentPayoutCents ?? 0) / 100).toFixed(2)} to talent`}
+              </button>
+            )}
+
+            {b.status === "completed" && b.paymentStatus === "held" && viewer === "talent" && (
+              <div
+                className="text-[10.5px] font-semibold px-2.5 py-1.5 rounded-full inline-block mb-2"
+                style={{ background: "var(--blue-tint)", color: "var(--blue)" }}
+              >
+                Awaiting payment release from brand
+              </div>
+            )}
+
+            {b.status === "completed" && b.paymentStatus === "released" && (
+              <div
+                className="text-[10.5px] font-semibold px-2.5 py-1.5 rounded-full inline-block mb-2"
+                style={{ background: "#e3f8e9", color: "var(--green)" }}
+              >
+                Payment released ✓
               </div>
             )}
 
