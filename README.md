@@ -4,6 +4,8 @@ A two-sided marketplace matching brands with everyday people for local
 photoshoots, promo work, and content gigs — Tinder-style swiping, Airtasker-style
 local gig matching.
 
+<!-- e2e payment test branch -->
+
 ## Stack
 
 - **Next.js 15** (App Router, TypeScript, Tailwind v4)
