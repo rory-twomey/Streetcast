@@ -50,6 +50,7 @@ export default function SignupForm() {
   const [bio, setBio] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [website, setWebsite] = useState("");
+  const [brandInstagram, setBrandInstagram] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -166,10 +167,19 @@ export default function SignupForm() {
       });
       router.push("/talent/discover");
     } else {
+      const brandHandle = brandInstagram.trim().replace(/^@/, "");
+      const brandInstagramUrl = brandHandle
+        ? brandHandle.startsWith("http")
+          ? brandHandle
+          : `https://instagram.com/${brandHandle}`
+        : null;
+      const brandWebsite = website.trim();
+
       await supabase.from("brand_profiles").insert({
         id: data.user.id,
         company_name: companyName.trim(),
-        website: website.trim() || null,
+        website: brandWebsite ? (brandWebsite.startsWith("http") ? brandWebsite : `https://${brandWebsite}`) : null,
+        instagram_url: brandInstagramUrl,
       });
       router.push("/brand/gigs");
     }
@@ -397,13 +407,19 @@ export default function SignupForm() {
         )}
 
         {stepId === "website" && (
-          <Step heading="What's your company website?" subtext="Skip this step if you don't have one.">
+          <Step heading="Where can we find you?" subtext="Skip either field if it doesn't apply.">
             <BigInput
-              label="Website"
+              label="Instagram"
+              value={brandInstagram}
+              onChange={setBrandInstagram}
+              placeholder="@yourbrand"
+              autoFocus
+            />
+            <BigInput
+              label="Company website"
               value={website}
               onChange={setWebsite}
               placeholder="www.example.com"
-              autoFocus
             />
           </Step>
         )}
