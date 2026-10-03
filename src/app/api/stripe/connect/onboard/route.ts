@@ -32,11 +32,26 @@ export async function POST(request: Request) {
     let accountId = talentProfile?.stripe_connect_account_id ?? null;
 
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        country: "AU",
-        capabilities: {
-          transfers: { requested: true },
+      // Stripe no longer allows this platform to create v1 Accounts in live mode,
+      // so new connected accounts are created via the v2 Core Accounts API instead.
+      const account = await stripe.v2.core.accounts.create({
+        contact_email: user.email,
+        dashboard: "express",
+        identity: { country: "au" },
+        defaults: {
+          responsibilities: {
+            fees_collector: "application",
+            losses_collector: "application",
+          },
+        },
+        configuration: {
+          recipient: {
+            capabilities: {
+              stripe_balance: {
+                stripe_transfers: { requested: true },
+              },
+            },
+          },
         },
         metadata: { user_id: user.id },
       });
@@ -48,11 +63,16 @@ export async function POST(request: Request) {
         .eq("id", user.id);
     }
 
-    const accountLink = await stripe.accountLinks.create({
+    const accountLink = await stripe.v2.core.accountLinks.create({
       account: accountId,
-      refresh_url: `${origin}/payouts`,
-      return_url: `${origin}/api/stripe/connect/return`,
-      type: "account_onboarding",
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          refresh_url: `${origin}/payouts`,
+          return_url: `${origin}/api/stripe/connect/return`,
+        },
+      },
     });
 
     return NextResponse.json({ url: accountLink.url });
