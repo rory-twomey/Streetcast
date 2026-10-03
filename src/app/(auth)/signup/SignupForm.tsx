@@ -23,7 +23,7 @@ const POPULAR_CITIES = [
   "Hobart, TAS",
 ];
 
-const TALENT_STEPS = ["name", "dob", "location", "tags", "rate", "about", "account"] as const;
+const TALENT_STEPS = ["name", "dob", "location", "tags", "links", "rate", "about", "account"] as const;
 const BRAND_STEPS = ["name", "dob", "location", "company", "website", "account"] as const;
 type StepId = (typeof TALENT_STEPS)[number] | (typeof BRAND_STEPS)[number];
 
@@ -41,6 +41,8 @@ export default function SignupForm() {
   const [dob, setDob] = useState("");
   const [city, setCity] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [instagramHandle, setInstagramHandle] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
   const [rateMin, setRateMin] = useState("");
   const [rateMax, setRateMax] = useState("");
   const [rateUnit, setRateUnit] = useState("hr");
@@ -71,6 +73,8 @@ export default function SignupForm() {
         return city.trim().length > 0;
       case "tags":
         return tags.length > 0;
+      case "links":
+        return instagramHandle.trim().length > 0 || portfolioUrl.trim().length > 0;
       case "rate":
         return rateMin.trim().length > 0 && rateMax.trim().length > 0;
       case "about":
@@ -140,11 +144,22 @@ export default function SignupForm() {
     }
 
     if (role === "talent") {
+      const portfolioUrls: string[] = [];
+      const handle = instagramHandle.trim().replace(/^@/, "");
+      if (handle) {
+        portfolioUrls.push(handle.startsWith("http") ? handle : `https://instagram.com/${handle}`);
+      }
+      const site = portfolioUrl.trim();
+      if (site) {
+        portfolioUrls.push(site.startsWith("http") ? site : `https://${site}`);
+      }
+
       await supabase.from("talent_profiles").insert({
         id: data.user.id,
         tagline: tagline.trim(),
         bio: bio.trim(),
         tags,
+        portfolio_urls: portfolioUrls,
         rate_min: rateMin ? Number(rateMin) : null,
         rate_max: rateMax ? Number(rateMax) : null,
         rate_unit: rateUnit,
@@ -278,6 +293,24 @@ export default function SignupForm() {
                 );
               })}
             </div>
+          </Step>
+        )}
+
+        {stepId === "links" && (
+          <Step heading="Where can we see your work?" subtext="At least one is required.">
+            <BigInput
+              label="Instagram"
+              value={instagramHandle}
+              onChange={setInstagramHandle}
+              placeholder="@yourhandle"
+              autoFocus
+            />
+            <BigInput
+              label="Portfolio website (optional)"
+              value={portfolioUrl}
+              onChange={setPortfolioUrl}
+              placeholder="www.yoursite.com"
+            />
           </Step>
         )}
 
